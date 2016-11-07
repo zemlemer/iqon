@@ -61,21 +61,18 @@ class Comment extends BaseModel
     {
         $comment->pub_date = time();
 
-//        UPDATE my_tree SET left_key = left_key + 2, right_ key = right_ key + 2 WHERE left_key > $right_ key
         $this->getQueryBuilder()->update([
             static::LEFT_KEY => new DBExpression(static::LEFT_KEY . " + 2"),
             static::RIGHT_KEY => new DBExpression(static::RIGHT_KEY . " + 2"),
         ])  ->where(new DBExpression(static::LEFT_KEY . " > " . $this->{static::RIGHT_KEY}))
             ->execute();
 
-//    UPDATE my_tree SET right_key = right_key + 2 WHERE right_key >= $right_key AND left_key < $right_key
         $this->getQueryBuilder()->update([
             static::RIGHT_KEY => new DBExpression(static::RIGHT_KEY . " + 2"),
         ])  ->where(new DBExpression(static::RIGHT_KEY . " >= " . $this->{static::RIGHT_KEY}))
             ->where(new DBExpression(static::LEFT_KEY . " < " . $this->{static::RIGHT_KEY}))
             ->execute();
 
-//    INSERT INTO my_tree SET left_key = $right_key, right_key = $right_key + 1, level = $level + 1 [дополнительные параметры ]
         $comment->{static::LEFT_KEY} = $this->{static::RIGHT_KEY};
         $comment->{static::RIGHT_KEY} = $this->{static::RIGHT_KEY} + 1;
         $comment->{static::LEVEL} = $this->{static::LEVEL} + 1;
