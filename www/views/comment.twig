@@ -1,0 +1,24 @@
+<div class="media comment-wrap" data-comment-id="{{ comment.id }}"  data-comment-user-id="{{ comment.user_id }}">
+    <div class="media-left">
+        <img alt="avatar" class="media-object" src="/img/av.jpg">
+    </div>
+    <div class="media-body">
+        <div class="comment-stuff">
+            <h2 class="comment-username media-heading">{{ users[comment.user_id] }}</h2>
+            <p class="comment-text">{{ comment.comment_text }}</p>
+            <div class="comment-date label label-info">{{ comment.pub_date|date("F jS \\a\\t g:ia") }}</div>
+        </div>
+        <div class="comment-panel">
+            <button data-action="expand" class="btn btn-xs btn-default {% if comment.hasChildren() == false or withChildren %}hidden{% endif %}" title="Развернуть"><i class="glyphicon glyphicon-menu-down"></i></button>
+            <button data-comment="add" class="btn btn-xs btn-normal" title="Комментировать"><i class="glyphicon glyphicon-comment"></i></button>
+            <button data-comment="edit" class="btn btn-xs btn-warning" title="Редактировать"><i class="glyphicon glyphicon-pencil"></i></button>
+            <button data-action="delete" class="btn btn-xs btn-danger" title="Удалить"><i class="glyphicon glyphicon-trash"></i></button>
+        </div>
+
+        <div class="children">
+            {% if children %}
+                {{ include( "comments.twig", {comments: children} ) }}
+            {% endif %}
+        </div>
+    </div>
+</div>

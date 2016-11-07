@@ -1,0 +1,199 @@
+{% extends 'base.twig' %}
+{% block content %}
+
+    <div class="well">
+        <div>
+            <button type="button" class="btn btn-primary btn-lg" data-comment="add">
+                Добавить комментарий
+            </button>
+        </div>
+
+        <div class="media-list comments-list">
+            {% include "comments.twig" %}
+        </div>
+
+    </div>
+
+
+{% endblock %}
+
+{% block modal %}
+
+    <div class="modal fade" id="commentFormModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+
+                    <form>
+                        <input type="hidden" name="parentID">
+                        <input type="hidden" name="commentID">
+
+                        <div class="form-group">
+                            <label for="userID">Пользователь:</label>
+                            <select name="userID" class="form-control"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="commentText">Текст комментария</label>
+                            <textarea name="commentText" class="form-control"></textarea>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" data-action="saveComment">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+
+    {{ parent() }}
+
+    <script>
+
+        var  $commentsList,
+                $appendTo,
+                submitCallback = function () {
+
+                };
+
+        $(document).ready(function () {
+            var users = ["{{  users|join('", "')  }}"],
+                    editor = new CommentEditor($('#commentFormModal'), users);
+
+            $commentsList = $(".comments-list");
+            $appendTo = $commentsList;
+
+            $(document).on('click', '[data-comment]', function () {
+                var id = $(this).closest('[data-comment-id]').attr('data-comment-id'),
+                        action = $(this).attr('data-comment');
+
+                if(!id) {
+                    id = 1;
+                }
+
+                editor[action](id);
+            });
+
+            $(document).on('click', '[data-action=expand]', function () {
+                var $container = $(this).closest('[data-comment-id]'),
+                        $containerChildrenZone = $container.find('.media-body>.children'),
+                        id = $container.attr('data-comment-id');
+
+                $(this).hide();
+
+                $.get('/', {id: id}, function (r) {
+                    $containerChildrenZone.html(r);
+                });
+            });
+
+            $(document).on('click', '[data-action=delete]', function () {
+                var $container = $(this).closest('[data-comment-id]'),
+                        id = $container.attr('data-comment-id');
+
+                $.post('/delete', {commentID: id}, function (r) {
+                    $container.remove();
+                });
+            });
+        });
+
+        var CommentEditor = function ($commentsModal, users) {
+            var that = this,
+                    initiated = false,
+                    $submitButton = $commentsModal.find('button[data-action=saveComment]'),
+                    $commentForm = $commentsModal.find('form'),
+                    $commentIDField = $commentForm.find('[name=commentID]'),
+                    $parentIDField = $commentForm.find('[name=parentID]'),
+                    $commentTextField = $commentForm.find('[name=commentText]'),
+                    $commentsModalTitle = $commentsModal.find('.modal-title'),
+                    target,
+                    urls = {
+                        update: '/update',
+                        create: '/create'
+                    };
+
+            function show(commentID, parentID) {
+
+                if(!initiated) {
+                    initiated = true;
+                    that.init();
+                }
+
+                $commentIDField.val(commentID);
+                $parentIDField.val(parentID);
+
+                if (commentID) {
+                    var  $comment = $('[data-comment-id=' + commentID +']');
+                    $commentTextField.val($comment.find('.comment-text').html());
+                    $commentsModal.find('select option[value=' + $comment.attr('data-comment-user-id') + ']').attr('selected', 'selected');
+                    $commentsModalTitle.html('Редактировать комментарий');
+                } else {
+                    $commentTextField.val('');
+                    $commentsModalTitle.html('Добавить комментарий');
+
+                    if (parentID > 1) {
+                        $appendTo = $('[data-comment-id=' + parentID + ']>.media-body>.children');
+                    } else {
+                        $appendTo = $commentsList;
+                    }
+                }
+                $commentsModal.modal('show');
+            }
+
+            this.add = function (parentID) {
+                target = urls.create;
+
+                submitCallback = function (r) {
+                    $appendTo.append(r);
+                };
+
+                show(null, parentID);
+            };
+
+            this.edit = function (commentID) {
+                target = urls.update;
+
+                submitCallback = function (r) {
+
+                    var $commentTarget = $('[data-comment-id=' + commentID + '] .comment-stuff:first');
+                    r = JSON.parse(r);
+
+                    $commentTarget.find('.comment-text').html(r.comment_text);
+                    $commentTarget.find('.comment-username').html(users[r.user_id]);
+                };
+
+                show(commentID);
+            };
+
+            this.init = function () {
+                var $select = $commentsModal.find('select');
+
+                for (var i = 0; i < users.length; ++i) {
+                    $select.append($('<option value="' + i + '">' + users[i] + '</option>'));
+                }
+
+                $submitButton.click(function () {
+                    $.post(target, $commentForm.serialize(), function (r) {
+                        submitCallback(r);
+                        $commentsModal.modal('hide');
+                    });
+                });
+
+                $commentForm.submit(function () {
+                    $submitButton.click();
+                    return false;
+                });
+            };
+        };
+    </script>
+
+{% endblock %}

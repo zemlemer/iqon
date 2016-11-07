@@ -1,0 +1,24 @@
+{#Долго думал, куда вставить логику построения дерева#}
+{#Решил, что она более уместна в шаблоне#}
+
+{% set lastIndex = 0 %}
+
+{% for comment in comments %}
+
+    {% if loop.index > lastIndex %}
+
+        {% if withChildren and comment.hasChildren() %}
+
+            {% set offset = ((comment.rgt - comment.lft - 1)/2) %}
+            {% set children = comments|slice(loop.index, offset) %}
+            {% set lastIndex = loop.index + offset %}
+
+        {% else %}
+            {% set children = null %}
+        {% endif %}
+
+        {{ include( "comment.twig", {children: children} ) }}
+
+    {% endif %}
+
+{% endfor %}
