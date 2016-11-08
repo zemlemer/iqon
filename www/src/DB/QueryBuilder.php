@@ -10,6 +10,11 @@ use App\Models\BaseModel;
 use App\Structures\DbCondition;
 use App\Structures\DBExpression;
 
+/**
+ * Class QueryBuilder
+ *
+ * @package App\DB
+ */
 class QueryBuilder implements QueryBuilderInterface
 {
     const
@@ -19,13 +24,16 @@ class QueryBuilder implements QueryBuilderInterface
         COMMAND_DELETE = "delete",
         COMMAND_REPLACE = "replace";
 
-    /**
-     * @var DbInterface $provider
-     */
+    /** @var DbInterface $provider */
     static protected $provider;
 
+    /** @var string */
     protected $sql = '';
+
+    /** @var string */
     protected $baseSQL = '';
+
+    /** @var array  */
     protected $bindings = [];
 
     /** @var BaseModel */
@@ -33,22 +41,45 @@ class QueryBuilder implements QueryBuilderInterface
 
     /** @var array|DbCondition[] $conditions */
     protected $conditions = [];
+
+    /** @var string */
     protected $tableName;
+
+    /** @var array*/
     protected $result;
 
+    /** @var string */
     protected $command;
+
+    /** @var array */
     protected $select = [];
+
+    /** @var array */
     protected $where = [];
+
+    /** @var array */
     protected $orderBy = [];
+
+    /** @var array */
     protected $keys = [];
+
+    /** @var array */
     protected $values = [];
 
-
+    /**
+     * QueryBuilder constructor.
+     *
+     * @param string $tableName
+     */
     public function __construct(string $tableName)
     {
         $this->tableName = $tableName;
     }
 
+    /**
+     * @param $model
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function setModel($model) : QueryBuilderInterface
     {
         $this->model = $model;
@@ -56,11 +87,17 @@ class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param \App\Contracts\DbInterface $provider
+     */
     public static function setProvider(DbInterface $provider)
     {
         static::$provider = $provider;
     }
 
+    /**
+     * @return \App\Contracts\DbInterface
+     */
     protected function getProvider() : DbInterface
     {
         if(!static::$provider) {
@@ -70,6 +107,10 @@ class QueryBuilder implements QueryBuilderInterface
         return static::$provider;
     }
 
+    /**
+     * @param array $fields
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function select(array $fields = ['*']) : QueryBuilderInterface
     {
         $this->baseSQL = "select ". implode(',', $fields) ." from ". $this->tableName;
@@ -78,6 +119,10 @@ class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param array $fields
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function replace(array $fields) : QueryBuilderInterface
     {
         $this->baseSQL = "replace into ". $this->tableName ." ("
@@ -92,6 +137,10 @@ class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param array $fields
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function update(array $fields) : QueryBuilderInterface
     {
         $updateChunks = [];
@@ -114,6 +163,9 @@ class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function delete() : QueryBuilderInterface
     {
         $this->baseSQL = "delete from " . $this->tableName;
@@ -139,6 +191,10 @@ class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param array $conditions
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function setConditions(array $conditions) : QueryBuilderInterface
     {
         foreach ($conditions as $condition) {
@@ -148,6 +204,10 @@ class QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param $condition
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function where($condition) : QueryBuilderInterface
     {
         $this->conditions[] = $condition;
@@ -157,6 +217,9 @@ class QueryBuilder implements QueryBuilderInterface
 
     // Не стал реализовывать здесь limit,
     // что в боевой версии, конечно, следовало бы сделать
+    /**
+     * @return null|static
+     */
     public function first()
     {
         $list = $this->get();
@@ -174,6 +237,9 @@ class QueryBuilder implements QueryBuilderInterface
         }
     }
 
+    /**
+     * @return \App\DB\QueryBuilder|null
+     */
     public function firstOrFail()
     {
 
@@ -185,6 +251,9 @@ class QueryBuilder implements QueryBuilderInterface
         return $result;
     }
 
+    /**
+     * @return array
+     */
     public function all() : array
     {
         $result = $this->get();
@@ -196,6 +265,9 @@ class QueryBuilder implements QueryBuilderInterface
         return $result;
     }
 
+    /**
+     * @return array
+     */
     public function get() : array
     {
         $this->execute();
@@ -203,6 +275,9 @@ class QueryBuilder implements QueryBuilderInterface
         return $this->result ? $this->result : [];
     }
 
+    /**
+     * @return bool|mixed
+     */
     public function execute()
     {
         $this->buildSQL();
@@ -220,6 +295,9 @@ class QueryBuilder implements QueryBuilderInterface
         return false;
     }
 
+    /**
+     * @return \App\DB\QueryBuilder
+     */
     protected function buildSQL() : self
     {
         $this->sql = $this->baseSQL;

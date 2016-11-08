@@ -8,12 +8,23 @@ use App\Contracts\ResponseInterface;
 use App\Contracts\RouterInterface;
 use App\Exceptions\NotFoundException;
 
+/**
+ * Class Router
+ *
+ * @package App\Http
+ */
 class Router implements RouterInterface
 {
     const ROUTES_CONFIG_KEY = 'routes';
 
+    /** @var \App\Contracts\ConfigInterface */
     protected $config;
 
+    /**
+     * Router constructor.
+     *
+     * @param \App\Contracts\ConfigInterface $config
+     */
     public function __construct(ConfigInterface $config)
     {
         $this->config = $config;
@@ -59,6 +70,11 @@ class Router implements RouterInterface
         return count($matches) > 0;
     }
 
+    /**
+     * @param string $className
+     * @param \App\Contracts\RequestInterface $request
+     * @return \App\Contracts\ControllerInterface
+     */
     protected function getControllerByName(string $className, RequestInterface $request) : ControllerInterface
     {
         return new $className($request);

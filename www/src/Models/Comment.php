@@ -26,16 +26,25 @@ class Comment extends BaseModel
         LEVEL = 'lvl';
 
 
+    /**
+     * @var array
+     */
     protected $attributes = [
         self::RIGHT_KEY, self::LEFT_KEY, self::LEVEL,
         'id', 'user_id', 'pub_date', 'comment_text'
     ];
 
+    /**
+     * @return string
+     */
     public function getPrimaryKey() : string
     {
         return static::PRIMARY_KEY;
     }
 
+    /**
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function getRoot() : QueryBuilderInterface
     {
         return $this->getQueryBuilder()
@@ -44,6 +53,10 @@ class Comment extends BaseModel
 
     }
 
+    /**
+     * @param null $depth
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public function getDescendants($depth = null) : QueryBuilderInterface
     {
         $query = $this->getQueryBuilder()
@@ -57,6 +70,10 @@ class Comment extends BaseModel
         return $query;
     }
 
+    /**
+     * @param \App\Models\Comment $comment
+     * @return \App\Models\Comment
+     */
     public function append(self $comment) : self
     {
         $comment->pub_date = time();
@@ -80,6 +97,9 @@ class Comment extends BaseModel
         return $comment->save();
     }
 
+    /**
+     * @return bool
+     */
     public function delete()
     {
         $this->getQueryBuilder()
@@ -100,11 +120,17 @@ class Comment extends BaseModel
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function hasChildren()
     {
         return ($this->{self::RIGHT_KEY} - $this->{self::LEFT_KEY} > 1);
     }
 
+    /**
+     * @return string
+     */
     public function getTbName() : string
     {
         return static::TABLE;

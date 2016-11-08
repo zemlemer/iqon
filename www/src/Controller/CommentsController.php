@@ -6,8 +6,16 @@ use App\Contracts\ResponseInterface;
 use App\Models\Comment;
 use App\Controller;
 
+/**
+ * Class CommentsController
+ *
+ * @package App\Controller
+ */
 class CommentsController extends Controller
 {
+    /**
+     * @return \App\Contracts\ResponseInterface
+     */
     public function getList() : ResponseInterface
     {
         $parentID = $this->request->get('id');
@@ -30,6 +38,9 @@ class CommentsController extends Controller
         return $this->buildResponse($tpl, compact('comments', 'withChildren'));
     }
 
+    /**
+     * @return \App\Contracts\ResponseInterface
+     */
     public function create()
     {
         $parentID = $this->checkPost('parentID');
@@ -49,6 +60,9 @@ class CommentsController extends Controller
         return $this->buildResponse('comment', compact('comment'));
     }
 
+    /**
+     * @return \App\Contracts\ResponseInterface
+     */
     public function update()
     {
         $commentID = $this->checkPost('commentID');
@@ -66,6 +80,9 @@ class CommentsController extends Controller
         return $this->getResponse()->setBody($comment->toJSON());
     }
 
+    /**
+     * @return \App\Contracts\ResponseInterface
+     */
     public function delete()
     {
         $commentID = $this->checkPost('commentID');
@@ -78,6 +95,9 @@ class CommentsController extends Controller
         return $this->getResponse()->setBody('');
     }
 
+    /**
+     * @return \App\Models\Comment
+     */
     protected function getModel() : Comment
     {
         return new Comment();

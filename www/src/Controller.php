@@ -8,22 +8,35 @@ use App\Contracts\{
 use App\Exceptions\WrongParameterException;
 use App\Http\Response;
 
+/**
+ * Class Controller
+ *
+ * @package App
+ */
 class Controller implements ControllerInterface
 {
     const TEMPLATES_CONFIG_KEY = 'templates';
 
     const USERS = ['Alex', 'Mary', 'John', 'Helga','Alice'];
 
-    /**
-     * @var RequestInterface $request
-     */
+    /** @var RequestInterface $request */
     protected $request;
 
+    /**
+     * Controller constructor.
+     *
+     * @param \App\Contracts\RequestInterface $request
+     */
     public function __construct(RequestInterface $request)
     {
         $this->request = $request;
     }
 
+    /**
+     * @param $template
+     * @param array $params
+     * @return \App\Contracts\ResponseInterface
+     */
     public function buildResponse($template, $params = []) : ResponseInterface
     {
         $params = array_merge($params, ['users' => $this->getUsers()]);
@@ -36,16 +49,25 @@ class Controller implements ControllerInterface
         return $response;
     }
 
+    /**
+     * @return array
+     */
     protected function getUsers() : array
     {
         return self::USERS;
     }
 
+    /**
+     * @return \App\Contracts\ResponseInterface
+     */
     protected function getResponse() : ResponseInterface
     {
         return new Response(Response::CODE_OK);
     }
 
+    /**
+     * @return \App\Contracts\ViewInterface
+     */
     protected function getView() : ViewInterface
     {
         $config = $this->request->getApp()->getConfig();
@@ -53,6 +75,10 @@ class Controller implements ControllerInterface
         return new View($templatesLayer);
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     protected function checkPost($key)
     {
         $value = $this->request->post($key);

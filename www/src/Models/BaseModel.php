@@ -8,6 +8,11 @@ use App\Exceptions\WrongCallException;
 use App\Exceptions\WrongParameterException;
 use App\Structures\DbCondition;
 
+/**
+ * Class BaseModel
+ *
+ * @package App\Models
+ */
 abstract class BaseModel
 {
     /**
@@ -20,20 +25,41 @@ abstract class BaseModel
      */
     abstract public function getPrimaryKey() : string;
 
+    /**
+     * @var array
+     */
     protected $data = [];
+    /**
+     * @var array
+     */
     protected $oldData = [];
+    /**
+     * @var array
+     */
     protected $attributes = [];
 
+    /**
+     * BaseModel constructor.
+     *
+     * @param array $data
+     */
     public function __construct(array $data = [])
     {
         $this->setData($data);
     }
 
+    /**
+     * @return string
+     */
     public function toJSON()
     {
         return json_encode((object) $this->data);
     }
 
+    /**
+     * @param array $data
+     * @return static
+     */
     public static function create(array $data = [])
     {
         $model = new static($data);
@@ -42,6 +68,9 @@ abstract class BaseModel
         return $model;
     }
 
+    /**
+     * @return $this
+     */
     public function save()
     {
         if(!$this->data) {
@@ -57,6 +86,9 @@ abstract class BaseModel
         return $this;
     }
 
+    /**
+     * @param array $data
+     */
     protected function setData(array $data = [])
     {
         if($data) {
@@ -64,6 +96,9 @@ abstract class BaseModel
         }
     }
 
+    /**
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     protected function getQueryBuilder() : QueryBuilderInterface
     {
         $queryBuilder = new QueryBuilder($this->getTbName());
@@ -71,6 +106,10 @@ abstract class BaseModel
         return $queryBuilder->setModel($this);
     }
 
+    /**
+     * @param $data
+     * @return static
+     */
     public static function hydrate($data)
     {
         $model = new static((array) $data);
@@ -78,6 +117,10 @@ abstract class BaseModel
         return $model;
     }
 
+    /**
+     * @param array $items
+     * @return array
+     */
     public static function hydrateAll(array $items) : array
     {
         return array_map(function($item)
@@ -86,11 +129,19 @@ abstract class BaseModel
         }, $items);
     }
 
+    /**
+     * @param int $id
+     * @return mixed
+     */
     public function findByID(int $id)
     {
         return  static::find([new DbCondition($this->getPrimaryKey(), '=', $id)])->firstOrFail();
     }
 
+    /**
+     * @param array $conditions
+     * @return \App\Contracts\QueryBuilderInterface
+     */
     public static function find(array $conditions) : QueryBuilderInterface
     {
         return (new static())->getQueryBuilder()
@@ -98,6 +149,10 @@ abstract class BaseModel
             ->setConditions($conditions);
     }
 
+    /**
+     * @param $variable
+     * @return mixed|null
+     */
     public function __get($variable)
     {
         if(array_key_exists($variable, $this->data)) {
@@ -110,6 +165,10 @@ abstract class BaseModel
         throw new WrongParameterException("Attribute ". $variable ." doesn't exist");
     }
 
+    /**
+     * @param $variable
+     * @param $value
+     */
     public function __set($variable, $value)
     {
         if(in_array($variable, $this->attributes)) {
@@ -119,6 +178,10 @@ abstract class BaseModel
         }
     }
 
+    /**
+     * @param $variable
+     * @return bool
+     */
     public function __isset($variable)
     {
         if(!in_array($variable, $this->attributes)) {
@@ -128,6 +191,9 @@ abstract class BaseModel
         return isset($this->data[$variable]);
     }
 
+    /**
+     * @param $name
+     */
     public final function __unset($name)
     {
         throw new WrongCallException("Forbidden action. Attributes list of ". get_called_class()

@@ -11,6 +11,11 @@ use App\Exceptions\{
     WrongCallException
 };
 
+/**
+ * Class MySQL
+ *
+ * @package App\DB
+ */
 class MySQL implements DbInterface
 {
     /**
@@ -26,11 +31,17 @@ class MySQL implements DbInterface
      */
     private $connection;
 
+    /**
+     * MySQL constructor.
+     */
     final private function __construct()
     {
 
     }
 
+    /**
+     * @return \App\Contracts\DbInterface
+     */
     public static function getInstance() : DbInterface
     {
         if (!self::$instance) {
@@ -40,6 +51,11 @@ class MySQL implements DbInterface
         return self::$instance;
     }
 
+    /**
+     * @param string $sql
+     * @param array $bindings
+     * @return array
+     */
     public function query(string $sql, array $bindings = [])
     {
         $statement = $this->getConnection()->prepare($sql);
@@ -58,6 +74,10 @@ class MySQL implements DbInterface
         return $statement->fetchAll();
     }
 
+    /**
+     * @param \App\Contracts\ConfigLayerInterface $connectionParams
+     * @return \App\Contracts\DbInterface
+     */
     public function setConnectIonParams(ConfigLayerInterface $connectionParams) : DbInterface
     {
         $this->connectionParams = $connectionParams;
@@ -65,6 +85,9 @@ class MySQL implements DbInterface
         return $this;
     }
 
+    /**
+     * @return \PDO
+     */
     private function getConnection()
     {
          if(!$this->connection) {
@@ -82,6 +105,9 @@ class MySQL implements DbInterface
          return $this->connection;
     }
 
+    /**
+     * @return bool|int
+     */
     public function getLastID()
     {
         $data = $this->query("select last_insert_id() as id");

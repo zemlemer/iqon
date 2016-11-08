@@ -10,6 +10,11 @@ use App\Http\{
     Request, Response, Router
 };
 
+/**
+ * Class Application
+ *
+ * @package App
+ */
 class Application implements ApplicationInterface
 {
     const
@@ -34,6 +39,9 @@ class Application implements ApplicationInterface
         $this->setDbConnector();
     }
 
+    /**
+     * @return \App\Contracts\ConfigInterface
+     */
     public function getConfig() : ConfigInterface
     {
         return $this->config;
@@ -59,11 +67,17 @@ class Application implements ApplicationInterface
         return $response;
     }
 
+    /**
+     * @return \App\Contracts\RouterInterface
+     */
     protected function getRouter() : RouterInterface
     {
         return  new Router($this->config);
     }
 
+    /**
+     * @return \App\Contracts\RequestInterface
+     */
     protected function getRequest() : RequestInterface
     {
         if(!$this->request) {
@@ -73,6 +87,10 @@ class Application implements ApplicationInterface
         return $this->request;
     }
 
+    /**
+     * @param $code
+     * @return \App\Contracts\ResponseInterface
+     */
     protected function error($code) : ResponseInterface
     {
         return new Response($code);

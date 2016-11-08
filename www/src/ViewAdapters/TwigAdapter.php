@@ -7,6 +7,11 @@ use App\Contracts\{
     ViewAdapterInterface
 };
 
+/**
+ * Class TwigAdapter
+ *
+ * @package App\ViewAdapters
+ */
 class TwigAdapter implements ViewAdapterInterface
 {
     const
@@ -23,6 +28,11 @@ class TwigAdapter implements ViewAdapterInterface
     /** @var \Twig_Environment */
     protected $twig;
 
+    /**
+     * TwigAdapter constructor.
+     *
+     * @param \App\Contracts\ConfigLayerInterface $tplConfig
+     */
     public function __construct(ConfigLayerInterface $tplConfig)
     {
         $template_path          = $tplConfig->get(self::CONFIG_KEY_PATH);
